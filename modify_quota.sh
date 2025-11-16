@@ -5,8 +5,8 @@
 #   Add to account: ./modify_quota.sh -A <account-name> -c <num-cpu> -g <num-gpu>
 #   Add to user:    ./modify_quota.sh -A <account-name> -u <user-name> -c <num-cpu> -g <num-gpu>
 
-# source ~/.basrc
-# module load slurm
+source ~/.bashrc
+module load slurm
 
 set -euo pipefail
 
