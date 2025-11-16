@@ -5,8 +5,8 @@
 #   List account: ./show_quota.sh -A <account-name>
 #   List user:    ./show_quota.sh -A <account-name> -u <user-name>
 
-# source ~/.basrc
-# module load slurm
+source ~/.bashrc
+module load slurm
 
 set -euo pipefail
 
