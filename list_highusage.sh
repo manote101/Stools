@@ -37,7 +37,8 @@ list_high_usage_accounts() {
     
     # Get all associations with their quotas and usage
     local account_info
-    account_info=$(sshare -h -o "Account,GrpTRESMins,GrpTRESRaw" -Pn 2>/dev/null | grep -v '^.*||')
+    # account_info=$(sshare -h -o "Account,GrpTRESMins,GrpTRESRaw" -Pn 2>/dev/null | grep -v '^.*||')
+    account_info=$(sshare -h -o "Account,GrpTRESMins,GrpTRESRaw" -Pn 2>/dev/null | grep -v '^root||')
     
     if [ -z "$account_info" ]; then
         echo "Error: Could not retrieve association information" >&2
@@ -128,14 +129,14 @@ list_high_usage_users() {
         
         # Get user-specific quota information
         local user_info
-        user_info=$(sshare -h -A "$account" -u "$user" -o "Account,User,GrpTRESMins,GrpTRESRaw%120" 2>/dev/null | grep "^ $account.*$user" | head -1)
+        user_info=$(sshare -h -A "$account" -u "$user" -o Account,User,GrpTRESMins,GrpTRESRaw -Pn 2>/dev/null | grep "^ $account|$user" | head -1)
         
         if [ -z "$user_info" ]; then
             continue
         fi
         
-        local quota_tres=$(echo "$user_info" | awk '{print $3}')
-        local usage_tres=$(echo "$user_info" | awk '{print $4}')
+        local quota_tres=$(echo "$user_info" | awk -F'|' '{print $3}')
+        local usage_tres=$(echo "$user_info" | awk -F'|' '{print $4}')
         
         # Extract CPU and GPU values
         local cpu_quota=$(extract_tres_value "$quota_tres" "cpu")

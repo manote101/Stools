@@ -77,29 +77,27 @@ display_quotas() {
         echo "Fetching ACCOUNT quotas for: $acct"
         echo "====================================="
         
-        quota_info=$(sshare -h -A "$acct" -o Account,GrpTRESMins 2>/dev/null | grep "^$acct" | head -1)
-        usage_info=$(sshare -h -A "$acct" -o "Account,GrpTRESRaw%120" 2>/dev/null | grep "^$acct" | head -1)
+        user_info=$(sshare -h -A "$acct" -o Account,GrpTRESMins,GrpTRESRaw -Pn 2>/dev/null | grep "^$acct|" | head -1)
     else
         # Get user quota and usage information
-        echo "Fetching USER quotas for: $user in account: $acct"
+        echo "Fetching USER quotas for: $user in ACCOUNT: $acct"
         echo "=================================================="
         
-        quota_info=$(sshare -h -A "$acct" -u "$user" -o Account,User,GrpTRESMins 2>/dev/null | grep "^ $acct.*$user" | head -1)
-        usage_info=$(sshare -h -A "$acct" -u "$user" -o "Account,User,GrpTRESRaw%120" 2>/dev/null | grep "^ $acct.*$user" | head -1)
+        user_info=$(sshare -h -A "$acct" -u "$user" -o Account,User,GrpTRESMins,GrpTRESRaw -Pn 2>/dev/null | grep "^ $acct|$user|" | head -1)
     fi
     
-    if [ -z "$quota_info" ]; then
+    if [ -z "$user_info" ]; then
         echo "Error: Could not retrieve quota information" >&2
         return 1
     fi
     
     # Extract TRES fields
     if [ -z "$user" ]; then
-        local quota_tres=$(echo "$quota_info" | awk '{print $2}')
-        local usage_tres=$(echo "$usage_info" | awk '{print $2}')
+        local quota_tres=$(echo "$user_info" | awk -F'|' '{print $2}')
+        local usage_tres=$(echo "$user_info" | awk -F'|' '{print $3}')
     else
-        local quota_tres=$(echo "$quota_info" | awk '{print $3}')
-        local usage_tres=$(echo "$usage_info" | awk '{print $3}')
+        local quota_tres=$(echo "$user_info" | awk -F'|' '{print $3}')
+        local usage_tres=$(echo "$user_info" | awk -F'|' '{print $4}')
     fi
     
     # Extract CPU and GPU values
@@ -178,7 +176,7 @@ fi
 
 # Check if user exists (if specified)
 if [ -n "$user_name" ]; then
-    if ! sshare -h -A "$account_name" -u "$user_name" -o Account,User 2>/dev/null | grep -q "^ $account_name.*$user_name"; then
+    if ! sshare -h -A "$account_name" -u "$user_name" -o Account,User -Pn 2>/dev/null | grep -q "^ $account_name|$user_name"; then
         echo "Error: User '$user_name' not found in account '$account_name'." >&2
         exit 1
     fi

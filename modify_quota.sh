@@ -113,10 +113,10 @@ get_current_tres() {
     local query_info
     if [ -z "$user" ]; then
         # Get account information
-        query_info=$(sshare -ah -A "$acct" -o Account,GrpTRESMins 2>/dev/null | grep "^$acct" | head -1)
+        query_info=$(sshare -ah -A "$acct" -o Account,GrpTRESMins -Pn 2>/dev/null | grep "^$acct|" | head -1)
     else
         # Get user information
-        query_info=$(sshare -h -A "$acct" -u "$user" -o Account,User,GrpTRESMins 2>/dev/null | grep "^ $acct.*$user" | head -1)
+        query_info=$(sshare -h -A "$acct" -u "$user" -o Account,User,GrpTRESMins -Pn 2>/dev/null | grep "^ $acct|$user" | head -1)
     fi
     
     if [ -z "$query_info" ]; then
@@ -126,9 +126,9 @@ get_current_tres() {
     
     # Extract TRES field (field 2 for account, field 3 for user)
     if [ -z "$user" ]; then
-        echo "$query_info" | awk '{print $2}'
+        echo "$query_info" | awk -F'|' '{print $2}'
     else
-        echo "$query_info" | awk '{print $3}'
+        echo "$query_info" | awk -F'|' '{print $3}'
     fi
 }
 
@@ -211,7 +211,7 @@ fi
 
 # Check if user exists (if specified)
 if [ -n "$user_name" ]; then
-    if ! sshare -A "$account_name" -u "$user_name" -o Account,User 2>/dev/null | grep -q "^ $account_name.*$user_name"; then
+    if ! sshare -A "$account_name" -u "$user_name" -o Account,User -Pn 2>/dev/null | grep -q "^ $account_name|$user_name"; then
         echo "Error: User '$user_name' not found in account '$account_name'." >&2
         exit 1
     fi
