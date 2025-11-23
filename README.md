@@ -1,4 +1,4 @@
-###TRES Quota & Usage Checker
+### TRES Quota & Usage Checker
 
 This Python script processes Slurm account/user quota data and reports when CPU or GPU usage exceeds a specified percentage threshold of the allocated quota.
 
